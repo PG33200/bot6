@@ -32,7 +32,7 @@ st.markdown("---")
 #Description
 st.markdown(
     """ 
-    <h5 style='text-align:center;'>I'm Robby, an intelligent chatbot created by combining 
+    <h5 style='text-align:center;'>Salut je suis Robby, an intelligent chatbot created by combining 
     the strengths of Langchain and Streamlit. I use large language models to provide
     context-sensitive interactions. My goal is to help you better understand your data.
     I support PDF, TXT, CSV, Youtube transcript 🧠</h5>
