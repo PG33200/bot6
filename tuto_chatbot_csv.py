@@ -1,35 +1,47 @@
-#pip install streamlit langchain openai faiss-cpu tiktoken
-
+import os
 import streamlit as st
-from streamlit_chat import message
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import ConversationalRetrievalChain
-from langchain.document_loaders.csv_loader import CSVLoader
-from langchain.vectorstores import FAISS
-import tempfile
+from io import StringIO
+import re
+import sys
+from modules.history import ChatHistory
+from modules.layout import Layout
+from modules.utils import Utilities
+from modules.sidebar import Sidebar
 
-
+# Recueil de la clé API OpenAI
 user_api_key = st.sidebar.text_input(
     label="#### Your OpenAI API key 👇",
     placeholder="Paste your openAI API key, sk-",
     type="password")
 
-uploaded_file = st.sidebar.file_uploader("upload", type="csv")
+# Téléchargement du fichier texte
+uploaded_file = st.sidebar.file_uploader("Upload", type="txt")
 
-if uploaded_file :
-    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        tmp_file.write(uploaded_file.getvalue())
-        tmp_file_path = tmp_file.name
+if user_api_key and uploaded_file:
+    # Lire le contenu du fichier texte
+    text_data = uploaded_file.getvalue().decode("utf-8")
 
-    loader = CSVLoader(file_path=tmp_file_path, encoding="utf-8")
-    data = loader.load()
+    # Ici, vous pourriez diviser `text_data` en segments si nécessaire
+    # Par exemple, en utilisant `text_data.split(".")` pour diviser par phrases
+    # Pour cet exemple, nous supposerons que vous traitez `text_data` comme un seul document
 
-    embeddings = OpenAIEmbeddings()
-    vectors = FAISS.from_documents(data, embeddings)
+    # Initialisation des embeddings OpenAI avec la clé API
+    embeddings = OpenAIEmbeddings(openai_api_key=user_api_key)
 
-    chain = ConversationalRetrievalChain.from_llm(llm = ChatOpenAI(temperature=0.0,model_name='gpt-3.5-turbo', openai_api_key=user_api_key),
-                                                                      retriever=vectors.as_retriever())
+    # Utilisation d'un exemple simplifié pour créer un seul embedding pour tout le texte
+    # Dans une application réelle, vous pourriez vouloir créer des embeddings pour des segments individuels
+    document_embedding = embeddings.encode([text_data])
+
+    # Initialiser FAISS avec les embeddings (ici simplifié pour un seul document)
+    vectors = FAISS()
+    vectors.add([document_embedding])
+
+    # Initialisation de la chaîne de récupération conversationnelle
+    chain = ConversationalRetrievalChain.from_llm(llm=ChatOpenAI(temperature=0.0, model_name='gpt-3.5-turbo', openai_api_key=user_api_key),
+                                                  retriever=vectors.as_retriever())
+
+    # Suite du script pour la gestion de la conversation...
+
 
     def conversational_chat(query):
         
